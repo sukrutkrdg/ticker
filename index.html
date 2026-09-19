@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HOLI Treasury Tracker — Phase I</title>
+<meta name="description" content="Unofficial community tracker for the HOLI treasury Safe on Robinhood Chain. Live progress toward the $200,000 Phase I milestone, read straight from chain.">
+<meta name="robots" content="index,follow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230b0e13'/><path d='M9 22V10h3v4.6h8V10h3v12h-3v-4.6h-8V22z' fill='%235ee4a0'/></svg>">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="unofficial-bar" role="note">
+  <strong>Unofficial community tracker.</strong>
+  Not affiliated with, endorsed by, or operated by HOLI. Read-only — this page never asks for a wallet.
+</div>
+
+<header class="site-head">
+  <div class="wrap head-inner">
+    <div class="brandblock">
+      <h1>HOLI Treasury Tracker</h1>
+      <p class="sub">Phase&nbsp;I accumulation &middot; Robinhood Chain &middot; chain&nbsp;id&nbsp;4663</p>
+    </div>
+    <div class="head-actions">
+      <span id="freshness" class="freshness" data-state="loading">Loading…</span>
+      <button id="refresh" type="button" class="btn">Refresh</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ HERO: progress to target ============ -->
+  <section class="card hero" aria-labelledby="hero-h">
+    <h2 id="hero-h" class="card-title">Treasury value vs. Genesis threshold</h2>
+
+    <div class="hero-figure">
+      <span id="tv-usd" class="bignum skeleton-text">$—</span>
+      <span class="bignum-of">of <span id="target-usd">$200,000</span> target</span>
+    </div>
+
+    <div class="progress" role="progressbar" aria-labelledby="hero-h" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-track">
+      <div id="progress-fill" class="progress-fill"></div>
+    </div>
+
+    <div class="progress-legend">
+      <span><b id="pct">—</b> reached</span>
+      <span><b id="remaining">—</b> remaining</span>
+      <span id="eta-line" class="muted">Projection pending…</span>
+    </div>
+
+    <p class="hero-note">
+      Genesis is stated to open once treasury buybacks reach the target. This page measures the
+      Safe's on-chain holdings at current market price — it does not measure capital spent.
+    </p>
+  </section>
+
+  <!-- ============ STATS ============ -->
+  <section class="grid stats" aria-label="Treasury statistics">
+    <div class="card stat">
+      <span class="stat-k">SHYT held</span>
+      <span class="stat-v" id="shyt-amt">—</span>
+      <span class="stat-sub" id="shyt-supply-pct">—</span>
+    </div>
+    <div class="card stat">
+      <span class="stat-k">SHYT price</span>
+      <span class="stat-v" id="shyt-price">—</span>
+      <span class="stat-sub">GeckoTerminal spot</span>
+    </div>
+    <div class="card stat">
+      <span class="stat-k">ETH in Safe</span>
+      <span class="stat-v" id="eth-amt">—</span>
+      <span class="stat-sub" id="eth-usd">—</span>
+    </div>
+    <div class="card stat">
+      <span class="stat-k">Inbound transfers</span>
+      <span class="stat-v" id="tx-count">—</span>
+      <span class="stat-sub" id="tx-window">—</span>
+    </div>
+  </section>
+
+  <!-- ============ PATH TO TARGET ============ -->
+  <section class="card" aria-labelledby="path-h">
+    <div class="card-head">
+      <h2 id="path-h" class="card-title">Path to the target</h2>
+      <span class="card-note">Two levers, one destination</span>
+    </div>
+
+    <div class="grid lever-grid">
+      <div class="lever">
+        <span class="lever-k">Lever 1 — hold more SHYT</span>
+        <span class="lever-v" id="lever-tokens">—</span>
+        <span class="lever-sub" id="lever-tokens-sub">—</span>
+      </div>
+      <div class="lever">
+        <span class="lever-k">Lever 2 — SHYT appreciates</span>
+        <span class="lever-v" id="lever-price">—</span>
+        <span class="lever-sub" id="lever-price-sub">—</span>
+      </div>
+    </div>
+
+    <p id="path-flag" class="flag" hidden></p>
+
+    <p class="hero-note">
+      These are substitutes, not additions. The threshold can be met by holding more tokens, by the
+      token being worth more, or by any blend of the two. Both figures are derived from the balance
+      and price shown above, so both move whenever the market does.
+    </p>
+  </section>
+
+  <!-- ============ ACCUMULATION CHART ============ -->
+  <section class="card" aria-labelledby="chart-h">
+    <div class="card-head">
+      <h2 id="chart-h" class="card-title">Cumulative SHYT accumulated</h2>
+      <span class="card-note" id="chart-note">—</span>
+    </div>
+    <div class="chart-holder">
+      <svg id="chart" viewBox="0 0 860 260" preserveAspectRatio="none" role="img" aria-labelledby="chart-h"></svg>
+    </div>
+    <div id="chart-axis" class="chart-axis"></div>
+  </section>
+
+  <!-- ============ MULTISIG VERIFICATION ============ -->
+  <section class="card" aria-labelledby="safe-h">
+    <div class="card-head">
+      <h2 id="safe-h" class="card-title">Custody check</h2>
+      <span class="card-note">Read live from the Safe contract</span>
+    </div>
+
+    <div class="grid safe-grid">
+      <div class="kv">
+        <span class="kv-k">Contract type</span>
+        <span class="kv-v" id="safe-type">—</span>
+      </div>
+      <div class="kv">
+        <span class="kv-k">Safe version</span>
+        <span class="kv-v" id="safe-version">—</span>
+      </div>
+      <div class="kv">
+        <span class="kv-k">Signature policy</span>
+        <span class="kv-v" id="safe-threshold">—</span>
+      </div>
+      <div class="kv">
+        <span class="kv-k">Treasury address</span>
+        <span class="kv-v mono"><a id="safe-link" class="addr" href="#" target="_blank" rel="noopener noreferrer">—</a></span>
+      </div>
+    </div>
+
+    <h3 class="sub-h">Owners</h3>
+    <ul id="owners" class="owners"><li class="muted">Loading…</li></ul>
+
+    <p class="hero-note" id="custody-note">
+      A multisig limits unilateral movement of funds; it does not by itself prevent the signers,
+      acting together, from moving them. Owner identities are not verifiable from chain data.
+    </p>
+  </section>
+
+  <!-- ============ TRANSFERS ============ -->
+  <section class="card" aria-labelledby="tx-h">
+    <div class="card-head">
+      <h2 id="tx-h" class="card-title">Treasury flows</h2>
+      <span class="card-note" id="flow-summary">—</span>
+    </div>
+    <div class="table-scroll">
+      <table class="tbl">
+        <thead>
+          <tr><th>Date (UTC)</th><th>Direction</th><th class="num">Amount</th><th class="num">Value now</th><th>Counterparty</th><th>Tx</th></tr>
+        </thead>
+        <tbody id="tx-body">
+          <tr><td colspan="6" class="muted">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ METHOD ============ -->
+  <section class="card" aria-labelledby="method-h">
+    <h2 id="method-h" class="card-title">How this page gets its numbers</h2>
+    <ol class="method">
+      <li><b>Balances</b> — Blockscout <code>/addresses/{safe}</code> and <code>/token-balances</code> on Robinhood Chain.</li>
+      <li><b>Price</b> — GeckoTerminal spot price for SHYT on the <code>robinhood</code> network.</li>
+      <li><b>Custody</b> — <code>eth_call</code> to the Safe for <code>getOwners()</code>, <code>getThreshold()</code> and <code>VERSION()</code>.</li>
+      <li><b>History</b> — Blockscout ERC-20 transfer log for the Safe address.</li>
+    </ol>
+    <p class="hero-note">
+      Everything runs in your browser against public endpoints. There is no server, no database,
+      and no account. Treasury value moves with SHYT's market price, so it can fall as well as rise
+      even when no tokens leave the Safe.
+    </p>
+  </section>
+
+  <div id="errors" class="errors" hidden></div>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p>
+      Unofficial. Built by a community member. Source data:
+      <a href="https://robinhoodchain.blockscout.com" target="_blank" rel="noopener noreferrer">Blockscout</a> &middot;
+      <a href="https://www.geckoterminal.com/robinhood" target="_blank" rel="noopener noreferrer">GeckoTerminal</a>.
+    </p>
+    <p class="muted small">
+      Not financial advice. Not a HOLI product. No token, no sale, no wallet connection. Verify every
+      figure against the explorer before acting on it.
+    </p>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
